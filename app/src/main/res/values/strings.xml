@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">TimeTable</string>
+    <string name="EnumChoiseString">Числитель/Знаменатель</string>
+    <string name="EnumString">Числитель/Знаменатель</string>
+    <string name="AllTimetableString">ALL</string>
+    <string name="TimetableTittleString">Расписание</string>
+    <string name="change">Редактирование</string>
+    <string name="choice">Выбрать расписание</string>
+    <string name="settings">Настройки</string>
+    <string name="update">Обновить</string>
+    <string name="current_day_title">My header title</string>
+    <string name="current_enum_status_tittle">My header title</string>
+    <string name="current_enum_status_title">My another title</string>
+    <string name="string_course">Курс:</string>
+    <string name="string_group">Группа:</string>
+    <string name="string_subgroup">Подгруппа:</string>
+    <string name="save_button">Сохранить</string>
+</resources>
