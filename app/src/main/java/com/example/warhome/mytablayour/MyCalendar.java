@@ -7,13 +7,14 @@ import java.util.Calendar;
 
 class MyCalendar {
 
-    boolean isEnum = true;
     int curr_day;
     int day_of_week_learn;
     int month;
     int day_of_week;
+    boolean isEnumCalendar;
 
-    MyCalendar(int temp_day) {
+    MyCalendar(int temp_day, boolean isEnum) {
+        isEnumCalendar = isEnum;
         Calendar calendar = Calendar.getInstance();
         curr_day = calendar.get(Calendar.DATE);
         day_of_week_learn = calendar.get(Calendar.DAY_OF_WEEK);
@@ -29,9 +30,9 @@ class MyCalendar {
         }
 
         if (month == 6 && curr_day == 1) {
-            isEnum = true;
+            isEnumCalendar = true;
         } else if (day_of_week_learn == 2 && curr_day != temp_day && temp_day != -1) {
-            isEnum = !isEnum;
+            isEnumCalendar = !isEnum;
         }
     }
 }

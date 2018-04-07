@@ -36,7 +36,8 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     private String JSON;
     private DrawerLayout mDrawerLayout;
     private MyCalendar myCalendar;
-    private boolean isEnum;
+    private boolean isEnum = false; // 0 - числитель 1 - знаменатель
+    private boolean onCheckedChangedStatus = false;
 
     List<MyFragment> myFragmentList;
 
@@ -63,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         curr_course = 3;
         curr_group = 7;
         boolean curr_isEnum = true;
-
 
         for(Allessons allessons: AllessonsList) {
             if (Integer.valueOf(allessons.getGroup())==curr_group&&Integer.valueOf(allessons.getCourse())==curr_course) {
@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         saturdayList.add(new Lesson("test_lesson_saturday", "test_time", "test_teacher", "test_room"));*/
     }
 
+
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
     }
@@ -140,6 +141,12 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        final SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
+        final SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        isEnum = sharedPreferences.getBoolean("IS_ENUM", false);
+
+        final ViewPager viewPager = findViewById(R.id.viewpager);
         Toolbar toolbar = findViewById(R.id.my_own_toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
@@ -147,20 +154,37 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
             actionBar.setCustomView(R.layout.switch_layout);
             actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         }
+
+        //------------------------------- Switch -----------------------------------------//
         Switch sw = findViewById(R.id.app_switch);
-        sw.setOnCheckedChangeListener(this);
-        initializeData();
+        if(sharedPreferences.getBoolean("IS_ENUM", false) == true)sw.setActivated(true);
+        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(compoundButton.isChecked()) editor.putBoolean("IS_ENUM", true);
+                else editor.putBoolean("IS_ENUM", false);
+                editor.apply();
+                isEnum = sharedPreferences.getBoolean("IS_ENUM", false);
+                initializeData();
+                setupViewPager(viewPager);
+            }
+        });
 
-        // Working with calendar
-        SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        /*if(onCheckedChangedStatus) {
+            onCheckedChangedStatus = false;
+            recreate();
+        }*/
+        //---------------------------------------------------------------------------------//
 
+        //---------------------------- Working with calendar ------------------------------//
         int temp_day = sharedPreferences.getInt("TEMP_DAY", -1);
-        myCalendar = new MyCalendar(temp_day);
-        isEnum = myCalendar.isEnum;
+        myCalendar = new MyCalendar(temp_day,isEnum);
+        editor.putBoolean("IS_ENUM" , myCalendar.isEnumCalendar);
         editor.putInt("TEMP_DAY",myCalendar.curr_day);
         editor.apply();
-        //
+        isEnum = myCalendar.isEnumCalendar;
+        //---------------------------------------------------------------------------------//
+        initializeData();
 
         //JSON
         /*URL url = null;
@@ -182,7 +206,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         Type collectionType = new TypeToken<Collection<Lesson>>(){}.getType();
         lessonList = gson.fromJson(JSON, collectionType);
         */
-
         //-------------------------------- NavigationDrawer ------------------------------//
         mDrawerLayout = findViewById(R.id.drawer_layout);
         final NavigationView navigationView = findViewById(R.id.nav_view);
@@ -194,8 +217,8 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         String s_title_day = myCalendar.curr_day + " " + months[myCalendar.month] + ", " + daysOfWeek[myCalendar.day_of_week];
         title_day_view.setText(s_title_day);
 
-        if(myCalendar.isEnum) title_enum_view.setText("Числитель");
-        else title_enum_view.setText("Знаменатель");
+        if(myCalendar.isEnumCalendar) title_enum_view.setText("Знаменатель");
+        else title_enum_view.setText("Числитель");
 
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
@@ -219,6 +242,15 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 });
         //----------------------------------------------------------------------------------//
 
+        setupViewPager(viewPager);
+        TabLayout tabLayout = findViewById(R.id.tablayout);
+        tabLayout.setupWithViewPager(viewPager);
+        // Show the start fragment depending of day_of_week_learn
+        if(myCalendar.day_of_week_learn < 2) viewPager.setCurrentItem(0);
+        else viewPager.setCurrentItem(myCalendar.day_of_week_learn - 2);
+    }
+
+    public void setupViewPager(ViewPager viewPager) {
         myFragmentList = new ArrayList<>();
         for(int i = 0; i < 6; i++) {
             Bundle bundle = new Bundle();
@@ -228,21 +260,10 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
             myFragmentList.add(mf);
         }
 
-        ViewPager viewPager = findViewById(R.id.viewpager);
-        setupViewPager(viewPager);
-        TabLayout tabLayout = findViewById(R.id.tablayout);
-        tabLayout.setupWithViewPager(viewPager);
-    }
-
-    public void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         for(int i = 0; i < 6; i++) {
             adapter.addFragment(myFragmentList.get(i), daysOfWeek[i]);
         }
         viewPager.setAdapter(adapter);
-
-        // Show the fragment depending of day_of_week_learn
-        if(myCalendar.day_of_week_learn < 2) viewPager.setCurrentItem(0);
-        else viewPager.setCurrentItem(myCalendar.day_of_week_learn - 2);
     }
 }
