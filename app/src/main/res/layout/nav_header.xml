@@ -23,8 +23,6 @@
         android:text="@string/current_enum_status_title"
         android:textSize="20sp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-
-
         />
 
 </LinearLayout>

@@ -10,12 +10,12 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class MyJSONParser extends AsyncTask<String, Void, String> {
+public class GetMethod extends AsyncTask<String, Void, String> {
 
     private URL url;
     public static String JSON;
 
-    MyJSONParser(URL url) {
+    GetMethod(URL url) {
         this.url = url;
     }
 

@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -25,8 +26,13 @@ import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener, CompoundButton.OnCheckedChangeListener {
 
@@ -39,7 +45,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
     public static List<LessonForAdapter> thursdayList;
     public static List<LessonForAdapter> fridayList;
     public static List<LessonForAdapter> saturdayList;
-    public static List<LessonForAdapter> testParserList;
     public static List<Lesson> lessonList;
 
     private DrawerLayout mDrawerLayout;
@@ -58,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
         thursdayList = new ArrayList<>();
         fridayList = new ArrayList<>();
         saturdayList = new ArrayList<>();
-        testParserList = new ArrayList<>();
 
         AppDatabase database = App.getInstance().getDatabase();
         LessonDao lessonDao = database.lessonDao();
@@ -101,6 +105,12 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 }
             }
         }
+        Collections.sort(mondayList);
+        Collections.sort(tuesdayList);
+        Collections.sort(wednesdayList);
+        Collections.sort(thursdayList);
+        Collections.sort(fridayList);
+        Collections.sort(saturdayList);
     }
 
     @Override
@@ -199,39 +209,49 @@ public class MainActivity extends AppCompatActivity implements TabLayout.OnTabSe
                         switch (menuItem.getItemId()){
                             case R.id.nav_choice_timetable:
                                 startActivity(new Intent(navigationView.getContext(), NavChoiceActivity.class));
+                                initializeData();
+                                setupViewPager(viewPager);
                                 break;
                             case R.id.nav_change_timetable:
                                 startActivity(new Intent(navigationView.getContext(), NavEditActivity.class));
-                                break;
-                            case R.id.nav_update_timetable:
-                                URL url = null;
-                                Gson gson = new Gson();
-                                try {
-                                    url = new URL("https://agile-dawn-86874.herokuapp.com");
-                                    MyJSONParser myJSONParser = new MyJSONParser(url);
-                                    myJSONParser.execute(new String[0]);
-                                    JSON = myJSONParser.get();
-
-                                } catch (MalformedURLException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                }
-                                Type collectionType = new TypeToken<JsonToLessons>(){}.getType();
-                                JsonToLessons jsonToLessons = gson.fromJson(JSON, collectionType);
-                                AppDatabase database = App.getInstance().getDatabase();
-                                LessonDao lessonDao = database.lessonDao();
-                                List<Lesson> oldLessons = lessonDao.getAll();
-                                for(int i = 0; i < oldLessons.size(); i++) {
-                                    lessonDao.delete(oldLessons.get(i));
-                                }
-                                for(int i = 0; i < jsonToLessons.getLessons().size();i++) {
-                                    lessonDao.insert(jsonToLessons.getLessons().get(i));
-                                }
                                 initializeData();
                                 setupViewPager(viewPager);
+                                break;
+                            case R.id.nav_update_timetable:
+                                if(InternetConnectionChecker.checkConnection(getApplicationContext())) {
+                                    ApiService api = Retro.getApiService();
+                                    Call<LessonList> call = api.getJson();
+                                    call.enqueue(new Callback<LessonList>() {
+                                        @Override
+                                        public void onResponse(Call<LessonList> call, Response<LessonList> response) {
+                                            if (response.isSuccessful()) {
+                                                lessonList = response.body().getLessons();
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onFailure(Call<LessonList> call, Throwable t) {
+                                            Toast toast = Toast.makeText(getApplicationContext(), t.getMessage(),Toast.LENGTH_SHORT);
+                                            toast.show();
+                                        }
+                                    });
+
+                                    AppDatabase database = App.getInstance().getDatabase();
+                                    LessonDao lessonDao = database.lessonDao();
+                                    List<Lesson> oldLessons = lessonDao.getAll();
+                                    for (int i = 0; i < oldLessons.size(); i++) {
+                                        lessonDao.delete(oldLessons.get(i));
+                                    }
+                                    for (int i = 0; i < lessonList.size(); i++) {
+                                        lessonDao.insert(lessonList.get(i));
+                                    }
+                                    initializeData();
+                                    setupViewPager(viewPager);
+                                }
+                                else {
+                                    Toast toast = Toast.makeText(getApplicationContext(), "Отсутствует интернет соединение",Toast.LENGTH_SHORT);
+                                    toast.show();
+                                }
                                 break;
                             default:
                                 break;

@@ -19,4 +19,5 @@
     <string name="newLessonString">Добавить пару</string>
     <string name="updateLessonString">Изменить пару</string>
     <string name="deleteLessonString">Удалить пару</string>
+    <string name="numerator_string">Числитель</string>
 </resources>

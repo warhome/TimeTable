@@ -2,12 +2,13 @@ package com.example.warhome.mytablayour;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 @Entity
-public class Lesson {
+public class Lesson implements Comparable<Lesson> {
     @PrimaryKey
     @SerializedName("id")
     @Expose
@@ -121,4 +122,11 @@ public class Lesson {
         this.numerator = numerator;
     }
 
+    @Override
+    public int compareTo(@NonNull Lesson lesson) {
+
+        String curr = this.getTime();
+        String input = lesson.getTime();
+        return Integer.valueOf(curr.substring(0,curr.indexOf(':'))) - Integer.valueOf(input.substring(0,input.indexOf(':')));
+    }
 }
