@@ -14,12 +14,13 @@
         android:switchMinWidth="60dp" />
 
     <TextView
+        android:layout_height="match_parent"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:text="@string/TimetableTittleString"
-        android:textColor="#d9dcdf"
-        android:textSize="20sp"/>
+        android:layout_alignLeft="@id/app_switch"
+        android:text  = "@string/TimeTableLogo"
+        android:layout_alignParentStart = "true"
+        android:layout_alignStart="@id/app_switch"
+        android:layout_alignParentLeft="true" />
+
 
 </RelativeLayout>

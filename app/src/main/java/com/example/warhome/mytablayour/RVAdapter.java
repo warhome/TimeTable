@@ -7,16 +7,16 @@ import android.widget.TextView;
 
 import java.util.List;
 
-public class RVAdapter extends RecyclerView.Adapter<RVAdapter.PersonViewHolder>{
+public class RVAdapter extends RecyclerView.Adapter<RVAdapter.LessonViewHolder>{
 
-    static class PersonViewHolder extends RecyclerView.ViewHolder {
+    static class LessonViewHolder extends RecyclerView.ViewHolder {
 
         TextView title;
         TextView time;
         TextView room;
         TextView teacher;
 
-        PersonViewHolder(View itemView) {
+        LessonViewHolder(View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.lesson);
             time = itemView.findViewById(R.id.time);
@@ -25,27 +25,27 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.PersonViewHolder>{
         }
     }
 
-    private List<Lesson> lessonList;
-    RVAdapter(List<Lesson> lessonList){
-        this.lessonList = lessonList;
+    private List<LessonForAdapter> lessonForAdapterList;
+    RVAdapter(List<LessonForAdapter> lessonForAdapterList){
+        this.lessonForAdapterList = lessonForAdapterList;
     }
 
     @Override
     public int getItemCount() {
-        return lessonList.size();
+        return lessonForAdapterList.size();
     }
     @Override
-    public RVAdapter.PersonViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+    public LessonViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.recycler_layout, viewGroup, false);
-        return new PersonViewHolder(v);
+        return new LessonViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(RVAdapter.PersonViewHolder personViewHolder, int i) {
-        personViewHolder.title.setText(lessonList.get(i).title);
-        personViewHolder.time.setText(lessonList.get(i).time);
-        personViewHolder.room.setText(lessonList.get(i).room);
-        personViewHolder.teacher.setText(lessonList.get(i).teacher);
+    public void onBindViewHolder(LessonViewHolder lessonViewHolder, int i) {
+        lessonViewHolder.title.setText(lessonForAdapterList.get(i).title);
+        lessonViewHolder.time.setText(lessonForAdapterList.get(i).time);
+        lessonViewHolder.room.setText(lessonForAdapterList.get(i).room);
+        lessonViewHolder.teacher.setText(lessonForAdapterList.get(i).teacher);
     }
 
     @Override

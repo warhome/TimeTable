@@ -1,6 +1,8 @@
 package com.example.warhome.mytablayour;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -19,8 +21,7 @@ public class NavChoiceActivity extends AppCompatActivity {
         final EditText editGroup = findViewById(R.id.editTextGroup);
         final EditText editSubGroup = findViewById(R.id.editTextSubGroup);
 
-        final SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         final int curr_course   = sharedPreferences.getInt("CURR_COURSE", -1);
         final int curr_group    = sharedPreferences.getInt("CURR_GROUP", -1);
         final int curr_subgroup = sharedPreferences.getInt("CURR_SUBGROUP", -1);
@@ -33,14 +34,22 @@ public class NavChoiceActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putInt("CURR_COURSE",Integer.parseInt(editCourse.getText().toString()));
-                editor.putInt("CURR_GROUP",Integer.parseInt(editGroup.getText().toString()));
-                editor.putInt("CURR_SUBGROUP",Integer.parseInt(editSubGroup.getText().toString()));
-                Toast toast = Toast.makeText(getApplicationContext(), "Сохранено",Toast.LENGTH_SHORT);
-                toast.show();
-                editor.apply();
+                try {
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putInt("CURR_COURSE",Integer.parseInt(editCourse.getText().toString()));
+                    editor.putInt("CURR_GROUP",Integer.parseInt(editGroup.getText().toString()));
+                    editor.putInt("CURR_SUBGROUP",Integer.parseInt(editSubGroup.getText().toString()));
+                    Toast toast = Toast.makeText(getApplicationContext(), "Сохранено",Toast.LENGTH_SHORT);
+                    toast.show();
+                    editor.apply();
+                }
+                catch (Exception exception) {
+                    Toast toast = Toast.makeText(getApplicationContext(), "Заполните все поля",Toast.LENGTH_SHORT);
+                    toast.show();
+                }
             }
         });
+
+
     }
 }

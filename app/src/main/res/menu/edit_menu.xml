@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/newLessonEdit"
+        android:title="@string/newLessonString"/>
+    <item android:id="@+id/updateLessonEdit"
+        android:title="@string/updateLessonString" />
+    <item android:id="@+id/deleteLessonEdit"
+        android:title="@string/deleteLessonString" />
+</menu>
