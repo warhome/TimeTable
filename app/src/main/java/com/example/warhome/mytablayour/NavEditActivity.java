@@ -1,6 +1,7 @@
 package com.example.warhome.mytablayour;
 
 import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +13,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.gson.JsonObject;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.ResponseBody;
@@ -20,6 +24,15 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class NavEditActivity extends AppCompatActivity {
+
+    Toolbar toolbar;
+    EditText editTitle;
+    EditText editTime;
+    EditText editTeacher;
+    EditText editRoom;
+    EditText editDayWeek;
+    EditText editMod;
+    Lesson lesson;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -31,24 +44,51 @@ public class NavEditActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         // получим идентификатор выбранного пункта меню
         final int id = item.getItemId();
+        editTitle = findViewById(R.id.editTitle);
+        editTime = findViewById(R.id.editTime);
+        editTeacher = findViewById(R.id.editTeacher);
+        editRoom = findViewById(R.id.editPlace);
+        editDayWeek = findViewById(R.id.editDayWeek);
+        editMod = findViewById(R.id.editMod);
+        Button button = findViewById(R.id.buttonAdd);
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         final int curr_course   = sharedPreferences.getInt("CURR_COURSE", -1);
         final int curr_group    = sharedPreferences.getInt("CURR_GROUP", -1);
 
-        final EditText editTitle = findViewById(R.id.editTitle);
-        final EditText editTime = findViewById(R.id.editTime);
-        final EditText editTeacher = findViewById(R.id.editTeacher);
-        final EditText editRoom = findViewById(R.id.editPlace);
-        final EditText editDayWeek = findViewById(R.id.editDayWeek);
-        final EditText editMod = findViewById(R.id.editMod);
-        Button button = findViewById(R.id.buttonAdd);
+        final String title = "test";
+        final String time = "11:30-12:00";
+        final String teacher = "teacher";
+        final String room = "room";
+        final String dayWeek = "0";
+        final String numerator = "0";
 
         AppDatabase database = App.getInstance().getDatabase();
-        LessonDao lessonDao = database.lessonDao();
+        final LessonDao lessonDao = database.lessonDao();
         List<Lesson> currLessons = lessonDao.getAll();
         int currId = 1;
         for (Lesson lesson:currLessons) {
             if(lesson.getId() > currId) currId = lesson.getId();
+        }
+
+        switch (id) {
+            case R.id.newLessonEdit:
+                SetActiveColorFilter();
+                toolbar.setTitle("Новая пара");
+                setSupportActionBar(toolbar);
+                break;
+
+            case R.id.updateLessonEdit:
+                SetDefaultColorFilter();
+                toolbar.setTitle("Изменение пары");
+                setSupportActionBar(toolbar);
+                break;
+            case R.id.deleteLessonEdit:
+                SetDefaultColorFilter();
+                toolbar.setTitle("Удаление пары");
+                setSupportActionBar(toolbar);
+                break;
+            default:
+                break;
         }
 
         final int finalCurrId = currId;
@@ -59,39 +99,41 @@ public class NavEditActivity extends AppCompatActivity {
                     //POST
                     case R.id.newLessonEdit:
                         if(InternetConnectionChecker.checkConnection(getApplicationContext())) {
-                            Lesson lesson = new Lesson(
-                                    finalCurrId,
-                                    editTitle.getText().toString(),
-                                    editTime.getText().toString(),
-                                    editTeacher.getText().toString(),
-                                    editRoom.getText().toString(),
-                                    editDayWeek.getText().toString(),
+                            lesson = new Lesson(
+                                    finalCurrId+1,
+                                    title,
+                                    time,
+                                    teacher,
+                                    room,
+                                    dayWeek,
                                     curr_course,
                                     curr_group,
-                                    editMod.getText().toString()
+                                    numerator
                             );
+
+                            List<Lesson> list = new ArrayList<>();
+                            list.add(lesson);
+                            LessonList lessonList = new LessonList();
+                            lessonList.setLessons(list);
+
                             ApiService api = Retro.getApiService();
-                            Call<okhttp3.ResponseBody> call = api.newLesson(lesson);
+                            Call<okhttp3.ResponseBody> call = api.newLesson(lessonList);
                             call.enqueue(new Callback<ResponseBody>() {
                                 @Override
                                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                    if (response.isSuccessful()) {
+                                    if(response.isSuccessful()) {
                                         Toast toast = Toast.makeText(getApplicationContext(), "Запись успешно добавлена", Toast.LENGTH_SHORT);
-                                        toast.show();
-                                    } else {
-                                        Toast toast = Toast.makeText(getApplicationContext(), "Что-то пошло не так", Toast.LENGTH_SHORT);
                                         toast.show();
                                     }
                                 }
 
                                 @Override
                                 public void onFailure(Call<ResponseBody> call, Throwable t) {
-                                    Toast toast = Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT);
+                                    Toast toast = Toast.makeText(getApplicationContext(), "Что-то пошло не так", Toast.LENGTH_SHORT);
                                     toast.show();
                                 }
                             });
                         }
-
                         else  {
                             Toast toast = Toast.makeText(getApplicationContext() ,"Отсутствует интернет соединение", Toast.LENGTH_SHORT);
                             toast.show();
@@ -99,9 +141,13 @@ public class NavEditActivity extends AppCompatActivity {
                         break;
                     //UPDATE
                     case R.id.updateLessonEdit:
+                        toolbar.setTitle("Изменение пары");
+                        setSupportActionBar(toolbar);
                         break;
                     //DELETE
                     case R.id.deleteLessonEdit:
+                        toolbar.setTitle("Удаление пары");
+                        setSupportActionBar(toolbar);
                         break;
                     default:
                         break;
@@ -117,8 +163,57 @@ public class NavEditActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav_edit);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("Редактирование расписания");
+        toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("Выберите способ редактирования");
         setSupportActionBar(toolbar);
+        editTitle = findViewById(R.id.editTitle);
+        editTime = findViewById(R.id.editTime);
+        editTeacher = findViewById(R.id.editTeacher);
+        editRoom = findViewById(R.id.editPlace);
+        editDayWeek = findViewById(R.id.editDayWeek);
+        editMod = findViewById(R.id.editMod);
+        SetDefaultColorFilter();
     }
-}
+
+    public void SetDefaultColorFilter(){
+        editTitle
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_c1cc9c), PorterDuff.Mode.SRC_IN);
+        editTime
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_c1cc9c), PorterDuff.Mode.SRC_IN);
+        editTeacher
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_c1cc9c), PorterDuff.Mode.SRC_IN);
+        editRoom
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_c1cc9c), PorterDuff.Mode.SRC_IN);
+        editDayWeek
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_c1cc9c), PorterDuff.Mode.SRC_IN);
+        editMod
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_c1cc9c), PorterDuff.Mode.SRC_IN);
+    }
+    public void SetActiveColorFilter(){
+        editTitle
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_a11826), PorterDuff.Mode.SRC_IN);
+        editTime
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_a11826), PorterDuff.Mode.SRC_IN);
+        editTeacher
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_a11826), PorterDuff.Mode.SRC_IN);
+        editRoom
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_a11826), PorterDuff.Mode.SRC_IN);
+        editDayWeek
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_a11826), PorterDuff.Mode.SRC_IN);
+        editMod
+                .getBackground()
+                .setColorFilter(getResources().getColor(R.color.color_a11826), PorterDuff.Mode.SRC_IN);
+    }
+    }
+

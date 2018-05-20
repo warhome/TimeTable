@@ -8,7 +8,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 @Entity
-public class Lesson implements Comparable<Lesson> {
+public class Lesson {
     @PrimaryKey
     @SerializedName("id")
     @Expose
@@ -122,11 +122,4 @@ public class Lesson implements Comparable<Lesson> {
         this.numerator = numerator;
     }
 
-    @Override
-    public int compareTo(@NonNull Lesson lesson) {
-
-        String curr = this.getTime();
-        String input = lesson.getTime();
-        return Integer.valueOf(curr.substring(0,curr.indexOf(':'))) - Integer.valueOf(input.substring(0,input.indexOf(':')));
-    }
 }
